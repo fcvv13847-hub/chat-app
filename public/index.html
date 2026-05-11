@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Chat</title>
+</head>
+<body>
+
+<h2>💬 Simple Chat</h2>
+
+<div id="chat" style="border:1px solid black;height:300px;overflow:auto;"></div>
+
+<input id="msg" placeholder="message">
+<button onclick="send()">Send</button>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+function send() {
+    socket.emit("message", msg.value);
+    msg.value = "";
+}
+
+socket.on("message", (msg) => {
+    const div = document.createElement("div");
+    div.innerText = msg;
+    chat.appendChild(div);
+});
+</script>
+
+</body>
+</html>

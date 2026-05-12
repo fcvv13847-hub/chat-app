@@ -8,14 +8,59 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
+const users = {};
+
 io.on("connection", (socket) => {
+
     console.log("user connected");
 
-    socket.on("message", (msg) => {
-        io.emit("message", msg);
+    // пользователь зашел
+    socket.on("join", (username) => {
+
+        users[socket.id] = username;
+
+        io.emit("message", {
+            system: true,
+            text: username + " joined the chat"
+        });
+
+        io.emit("users", Object.values(users));
     });
+
+    // сообщения
+    socket.on("message", (data) => {
+
+        io.emit("message", {
+            username: users[socket.id],
+            text: data
+        });
+
+    });
+
+    // выход
+    socket.on("disconnect", () => {
+
+        const username = users[socket.id];
+
+        delete users[socket.id];
+
+        io.emit("users", Object.values(users));
+
+        if(username){
+
+            io.emit("message", {
+                system: true,
+                text: username + " left the chat"
+            });
+
+        }
+
+    });
+
 });
 
-server.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
 });
